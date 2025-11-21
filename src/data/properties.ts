@@ -1,5 +1,5 @@
 // ロマサガ3 物件データ（一部抜粋）
-import { Property } from '../types/game';
+import type { Property } from '../types/game';
 
 export const properties: Property[] = [
   // バンガード

@@ -1,5 +1,5 @@
 // ロマサガ3 都市データ
-import { City } from '../types/game';
+import type { City } from '../types/game';
 
 export const cities: City[] = [
   { id: 'vanguard', name: 'バンガード', region: 'north', description: '北の交易都市' },

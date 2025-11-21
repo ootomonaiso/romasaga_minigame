@@ -1,5 +1,5 @@
 // ロマサガ3 取引品目データ
-import { Item } from '../types/game';
+import type { Item } from '../types/game';
 
 export const items: Item[] = [
   // 食料・農産物
