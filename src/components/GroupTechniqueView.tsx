@@ -108,7 +108,10 @@ export const GroupTechniqueView = ({ gameState, setGameState }: GroupTechniqueVi
       .filter(tech => {
         if (statusFilter === 'locked' && tech.isUnlocked) return false;
         if (statusFilter === 'unlocked' && !tech.isUnlocked) return false;
-        if (term && !`${tech.name}${tech.description}`.toLowerCase().includes(term)) return false;
+        if (term) {
+          const haystack = `${tech.name}${tech.description}`.toLowerCase();
+          if (!haystack.includes(term)) return false;
+        }
         return true;
       })
       .sort((a, b) => {

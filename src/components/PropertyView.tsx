@@ -213,16 +213,16 @@ export const PropertyView = ({ gameState, setGameState }: PropertyViewProps) => 
         </div>
 
         <div className="card-actions">
-          {!isOwned && !isOwnedByOther ? (
+          {!isOwned ? (
             <button 
               className="acquire-btn"
               onClick={() => startAcquisition(property.id)}
             >
-              買収する
+              買収する{isOwnedByOther ? '（他社所有）' : ''}
             </button>
           ) : (
             <button className="acquire-btn" disabled>
-              {isOwned ? '所有中' : '他社所有' }
+              所有中
             </button>
           )}
         </div>

@@ -5,6 +5,7 @@ import { createInitialGameState, calculateTotalAssets, calculateDailyIncome } fr
 import { PropertyView } from './components/PropertyView'
 import { GameHeader } from './components/GameHeader'
 import { GroupTechniqueView } from './components/GroupTechniqueView'
+import { NegotiationTechniqueView } from './components/NegotiationTechniqueView'
 import { cities } from './data/cities'
 
 function App() {
@@ -142,25 +143,7 @@ function App() {
               <GroupTechniqueView gameState={gameState} setGameState={setGameState} />
             )}
             {activeTab === 'techniques' && (
-              <div className="coming-soon">
-                <h2>かけひき技</h2>
-                <p>実装予定: 買収劇で使える特殊技</p>
-                <div className="technique-list">
-                  {gameState.negotiationTechniques.map(tech => (
-                    <div key={tech.id} className={`technique-card ${tech.isUnlocked ? 'unlocked' : 'locked'}`}>
-                      <h3>{tech.name}</h3>
-                      <p>{tech.description}</p>
-                      <p>コスト: {tech.cost.toLocaleString()} G</p>
-                      <p className="unlock-condition">習得条件: {tech.unlockCondition}</p>
-                      {tech.isUnlocked ? (
-                        <span className="status">✓ 習得済み</span>
-                      ) : (
-                        <span className="status">🔒 未習得</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <NegotiationTechniqueView gameState={gameState} />
             )}
           </div>
         </main>
