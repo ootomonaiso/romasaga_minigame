@@ -12,6 +12,20 @@ function App() {
   const [gameState, setGameState] = useState<GameState>(createInitialGameState())
   const [activeTab, setActiveTab] = useState<'properties' | 'groups' | 'techniques'>('properties')
   const [activePanel, setActivePanel] = useState<'player' | 'content' | 'trade'>('content')
+  const [isTradeActive, setIsTradeActive] = useState(false)
+
+  // トレード開始時にモバイルでトレードパネルへ自動移動
+  const handleTradeStart = () => {
+    setIsTradeActive(true)
+    // 画面幅1280px以下ならトレードパネルへ切り替え
+    if (window.innerWidth <= 1280) {
+      setActivePanel('trade')
+    }
+  }
+
+  const handleTradeEnd = () => {
+    setIsTradeActive(false)
+  }
 
   // 総資産を更新
   const updatedTotalAssets = calculateTotalAssets(
@@ -149,7 +163,12 @@ function App() {
 
           <div className="panel-surface">
             {activeTab === 'properties' && (
-              <PropertyView gameState={gameState} setGameState={setGameState} />
+              <PropertyView 
+                gameState={gameState} 
+                setGameState={setGameState}
+                onTradeStart={handleTradeStart}
+                onTradeEnd={handleTradeEnd}
+              />
             )}
             {activeTab === 'groups' && (
               <GroupTechniqueView gameState={gameState} setGameState={setGameState} />

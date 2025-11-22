@@ -50,9 +50,11 @@ const getCityTheme = (cityId: string) => cityThemes[cityId] ?? { accent: '#c8b6a
 interface PropertyViewProps {
   gameState: GameState;
   setGameState: React.Dispatch<React.SetStateAction<GameState>>;
+  onTradeStart?: () => void;
+  onTradeEnd?: () => void;
 }
 
-export const PropertyView = ({ gameState, setGameState }: PropertyViewProps) => {
+export const PropertyView = ({ gameState, setGameState, onTradeStart, onTradeEnd }: PropertyViewProps) => {
   const [selectedCity, setSelectedCity] = useState('all');
   const [selectedGroup, setSelectedGroup] = useState('all');
   const [currentBattle, setCurrentBattle] = useState<Property | null>(null);
@@ -90,6 +92,7 @@ export const PropertyView = ({ gameState, setGameState }: PropertyViewProps) => 
     const property = gameState.properties.find(p => p.id === propertyId);
     if (property) {
       setCurrentBattle(property);
+      onTradeStart?.();
     }
     else {
       notify('error', '物件が見つかりません');
@@ -166,11 +169,13 @@ export const PropertyView = ({ gameState, setGameState }: PropertyViewProps) => 
     }
 
     setCurrentBattle(null);
+    onTradeEnd?.();
   };
 
   // 買収劇キャンセル
   const handleBattleCancel = () => {
     setCurrentBattle(null);
+    onTradeEnd?.();
     notify('info', '買収劇を中断しました');
   };
 
