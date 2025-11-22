@@ -8,6 +8,7 @@ import {
   calculateDailyIncome,
   canAcquireProperty,
   checkGroupTechniqueUnlock,
+  checkNegotiationTechniqueUnlock,
 } from '../data/gameState';
 import { AcquisitionBattleComponent } from './AcquisitionBattle';
 import { useNotifications } from '../context/NotificationContext';
@@ -104,12 +105,27 @@ export const PropertyView = ({ gameState, setGameState }: PropertyViewProps) => 
       const property = gameState.properties.find(p => p.id === currentBattle.id);
       if (property) {
         const updatedOwnedProperties = [...gameState.player.ownedProperties, property.id];
-        const newlyUnlockedIds = checkGroupTechniqueUnlock(property.id, updatedOwnedProperties, gameState.groupTechniques);
-        const updatedGroupTechniques = newlyUnlockedIds.length > 0
+        const newlyUnlockedGroupIds = checkGroupTechniqueUnlock(property.id, updatedOwnedProperties, gameState.groupTechniques);
+        const updatedGroupTechniques = newlyUnlockedGroupIds.length > 0
           ? gameState.groupTechniques.map(tech =>
-              newlyUnlockedIds.includes(tech.id) ? { ...tech, isUnlocked: true } : tech
+              newlyUnlockedGroupIds.includes(tech.id) ? { ...tech, isUnlocked: true } : tech
             )
           : gameState.groupTechniques;
+
+        const shouldUnlockNegotiation = checkNegotiationTechniqueUnlock();
+        let negotiationUnlockId: string | null = null;
+        let updatedNegotiationTechniques = gameState.negotiationTechniques;
+
+        if (shouldUnlockNegotiation) {
+          const lockedNegotiations = gameState.negotiationTechniques.filter(tech => !tech.isUnlocked);
+          if (lockedNegotiations.length > 0) {
+            const randomTechnique = lockedNegotiations[Math.floor(Math.random() * lockedNegotiations.length)];
+            negotiationUnlockId = randomTechnique.id;
+            updatedNegotiationTechniques = gameState.negotiationTechniques.map(tech =>
+              tech.id === randomTechnique.id ? { ...tech, isUnlocked: true } : tech
+            );
+          }
+        }
 
         setGameState({
           ...gameState,
@@ -117,23 +133,33 @@ export const PropertyView = ({ gameState, setGameState }: PropertyViewProps) => 
             ...gameState.player,
             capital: gameState.player.capital - property.basePrice,
             ownedProperties: updatedOwnedProperties,
-            unlockedGroupTechniques: newlyUnlockedIds.length > 0
-              ? Array.from(new Set([...gameState.player.unlockedGroupTechniques, ...newlyUnlockedIds]))
+            unlockedGroupTechniques: newlyUnlockedGroupIds.length > 0
+              ? Array.from(new Set([...gameState.player.unlockedGroupTechniques, ...newlyUnlockedGroupIds]))
               : gameState.player.unlockedGroupTechniques,
+            unlockedNegotiationTechniques: negotiationUnlockId
+              ? Array.from(new Set([...gameState.player.unlockedNegotiationTechniques, negotiationUnlockId]))
+              : gameState.player.unlockedNegotiationTechniques,
           },
           properties: gameState.properties.map(p =>
             p.id === property.id ? { ...p, ownerId: 'player' } : p
           ),
           groupTechniques: updatedGroupTechniques,
+          negotiationTechniques: updatedNegotiationTechniques,
         });
 
         notify('success', `${property.name} の買収に成功しました！`);
-        newlyUnlockedIds.forEach(id => {
+        newlyUnlockedGroupIds.forEach(id => {
           const unlockedTech = gameState.groupTechniques.find(tech => tech.id === id);
           if (unlockedTech) {
             notify('info', `${unlockedTech.name} のグループ技を習得しました！`);
           }
         });
+        if (negotiationUnlockId) {
+          const technique = gameState.negotiationTechniques.find(tech => tech.id === negotiationUnlockId);
+          if (technique) {
+            notify('info', `${technique.name} のかけひき技をひらめきました！`);
+          }
+        }
       }
     } else {
       notify('error', '買収に失敗しました...');
