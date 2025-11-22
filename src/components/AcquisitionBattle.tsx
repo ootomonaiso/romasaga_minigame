@@ -1,5 +1,5 @@
 // 買収劇 - ストライプゲージによる交渉ミニゲーム
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { AcquisitionBattle, Property, GameState } from '../types/game';
 import { calculatePropertyFunding, calculateGroupFunding } from '../data/gameState';
 
@@ -34,6 +34,19 @@ export const AcquisitionBattleComponent = ({
   const [opponentFunds, setOpponentFunds] = useState(0);
   const [message, setMessage] = useState('買収劇が始まります！');
   const [isAnimating, setIsAnimating] = useState(false);
+  const [battleResult, setBattleResult] = useState<'victory' | 'defeat' | null>(null);
+  const confettiPieces = useMemo(
+    () =>
+      Array.from({ length: 14 }, (_, index) => {
+        const seeded = Math.sin(index * 17 + 1) * 10000;
+        const fractional = seeded - Math.floor(seeded);
+        return {
+          delay: `${index * 40}ms`,
+          left: `${Math.round(fractional * 100)}%`,
+        };
+      }),
+    []
+  );
 
   // ゲージの割合を計算（0-100%）
   const gaugePercentage = (battle.gaugeValue / 65535) * 100;
@@ -47,12 +60,14 @@ export const AcquisitionBattleComponent = ({
         // ゲージの上下限チェック
         if (newGaugeValue <= 0) {
           clearInterval(interval);
-          setTimeout(() => onComplete(false), 500);
+          setBattleResult('defeat');
+          setTimeout(() => onComplete(false), 900);
           return prev;
         }
         if (newGaugeValue >= 65535) {
           clearInterval(interval);
-          setTimeout(() => onComplete(true), 500);
+          setBattleResult('victory');
+          setTimeout(() => onComplete(true), 900);
           return prev;
         }
 
@@ -209,7 +224,20 @@ export const AcquisitionBattleComponent = ({
 
   return (
     <div className="acquisition-battle-overlay">
-      <div className="acquisition-battle">
+      <div className="acquisition-battle battle-enter">
+        {battleResult && (
+          <div className={`battle-result ${battleResult}`}>
+            <p>{battleResult === 'victory' ? '買収成功！' : '買収失敗...'}</p>
+            <div className="confetti-spray">
+              {confettiPieces.map((piece, index) => (
+                <span
+                  key={index}
+                  style={{ animationDelay: piece.delay, left: piece.left }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
         <div className="battle-header">
           <h2>🎯 買収劇</h2>
           <p className="target-property">{property.name}（相場: {property.basePrice.toLocaleString()} G）</p>

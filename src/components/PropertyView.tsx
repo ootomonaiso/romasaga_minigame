@@ -1,7 +1,7 @@
 // 物件ビュー - 物件一覧と買収画面
 import type { GameState, Property } from '../types/game';
 import { cities } from '../data/cities';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { 
   getIndependenceRiskColor, 
   getIndependenceRiskLabel, 
@@ -9,6 +9,41 @@ import {
   canAcquireProperty 
 } from '../data/gameState';
 import { AcquisitionBattleComponent } from './AcquisitionBattle';
+import { useNotifications } from '../context/NotificationContext';
+
+const categoryIcons: Record<string, string> = {
+  '牧場': '🐑',
+  '織': '🧵',
+  '工房': '⚙️',
+  '製紙': '📜',
+  '海運': '⚓',
+  '商会': '🏦',
+  '酒場': '🍷',
+  'カフェ': '☕',
+  'コーヒー': '☕',
+  '鍛冶': '⚒️',
+  '農': '🌾',
+  '劇場': '🎭',
+  '温泉': '♨️',
+};
+
+const cityThemes: Record<string, { accent: string; glow: string }> = {
+  vanguard: { accent: '#f39c12', glow: 'rgba(243, 156, 18, 0.35)' },
+  yamas: { accent: '#2ecc71', glow: 'rgba(46, 204, 113, 0.3)' },
+  wilmington: { accent: '#3498db', glow: 'rgba(52, 152, 219, 0.35)' },
+  pidona: { accent: '#9b59b6', glow: 'rgba(155, 89, 182, 0.35)' },
+  lance: { accent: '#e74c3c', glow: 'rgba(231, 76, 60, 0.35)' },
+  greatarc: { accent: '#e67e22', glow: 'rgba(230, 126, 34, 0.35)' },
+  roarne: { accent: '#d35400', glow: 'rgba(211, 84, 0, 0.35)' },
+  zweig: { accent: '#16a085', glow: 'rgba(22, 160, 133, 0.35)' },
+};
+
+const getCategoryIcon = (category: string) => {
+  const matched = Object.entries(categoryIcons).find(([key]) => category.includes(key));
+  return matched ? matched[1] : '🏢';
+};
+
+const getCityTheme = (cityId: string) => cityThemes[cityId] ?? { accent: '#c8b6a6', glow: 'rgba(200, 182, 166, 0.35)' };
 
 interface PropertyViewProps {
   gameState: GameState;
@@ -19,31 +54,33 @@ export const PropertyView = ({ gameState, setGameState }: PropertyViewProps) => 
   const [selectedCity, setSelectedCity] = useState('all');
   const [selectedGroup, setSelectedGroup] = useState('all');
   const [currentBattle, setCurrentBattle] = useState<Property | null>(null);
-  
-  // フィルター適用
-  let filteredProperties = gameState.properties;
-  
-  if (selectedCity !== 'all') {
-    filteredProperties = filteredProperties.filter(p => p.cityId === selectedCity);
-  }
-  
-  if (selectedGroup !== 'all') {
-    filteredProperties = filteredProperties.filter(p => p.group === selectedGroup);
-  }
-  
-  // 所有物件の集計
-  const ownedProperties = gameState.properties.filter(p => p.ownerId === 'player');
+  const { notify } = useNotifications();
+
+  const ownedProperties = useMemo(
+    () => gameState.properties.filter(p => p.ownerId === 'player'),
+    [gameState.properties]
+  );
   const dailyIncome = calculateDailyIncome(gameState.player.ownedProperties, gameState.properties);
-  
-  // 全グループのリスト
-  const allGroups = [...new Set(gameState.properties.map(p => p.group))];
+
+  const filteredProperties = useMemo(() => {
+    return gameState.properties.filter(property => {
+      if (selectedCity !== 'all' && property.cityId !== selectedCity) return false;
+      if (selectedGroup !== 'all' && property.group !== selectedGroup) return false;
+      return true;
+    });
+  }, [gameState.properties, selectedCity, selectedGroup]);
+
+  const allGroups = useMemo(
+    () => [...new Set(gameState.properties.map(p => p.group))],
+    [gameState.properties]
+  );
   
   // 物件買収開始
   const startAcquisition = (propertyId: string) => {
     const result = canAcquireProperty(propertyId, gameState.player.capital, gameState.properties);
     
     if (!result.canAcquire) {
-      alert(result.reason || '買収できません');
+      notify('warning', result.reason || '買収できません');
       return;
     }
     
@@ -51,6 +88,9 @@ export const PropertyView = ({ gameState, setGameState }: PropertyViewProps) => 
     const property = gameState.properties.find(p => p.id === propertyId);
     if (property) {
       setCurrentBattle(property);
+    }
+    else {
+      notify('error', '物件が見つかりません');
     }
   };
 
@@ -73,10 +113,10 @@ export const PropertyView = ({ gameState, setGameState }: PropertyViewProps) => 
             p.id === property.id ? { ...p, ownerId: 'player' } : p
           ),
         });
-        alert(`${property.name} の買収に成功しました！`);
+        notify('success', `${property.name} の買収に成功しました！`);
       }
     } else {
-      alert('買収に失敗しました...');
+      notify('error', '買収に失敗しました...');
     }
 
     setCurrentBattle(null);
@@ -85,6 +125,7 @@ export const PropertyView = ({ gameState, setGameState }: PropertyViewProps) => 
   // 買収劇キャンセル
   const handleBattleCancel = () => {
     setCurrentBattle(null);
+    notify('info', '買収劇を中断しました');
   };
 
   // 日を進める（収益回収）
@@ -98,7 +139,7 @@ export const PropertyView = ({ gameState, setGameState }: PropertyViewProps) => 
         currentDay: gameState.player.currentDay + 1,
       },
     });
-    alert(`${income.toLocaleString()} G の収益を得ました！`);
+    notify('success', `${income.toLocaleString()} G の収益を得ました！`);
   };
 
   // 物件カードの描画
@@ -108,57 +149,70 @@ export const PropertyView = ({ gameState, setGameState }: PropertyViewProps) => 
     const isOwnedByOther = property.ownerId !== null && property.ownerId !== 'player';
     const riskColor = getIndependenceRiskColor(property.independenceRisk);
     const riskLabel = getIndependenceRiskLabel(property.independenceRisk);
+    const theme = getCityTheme(property.cityId);
+    const categoryIcon = getCategoryIcon(property.category);
+    const riskPercent = Math.min(100, (property.independenceRisk / 128) * 100);
     
     return (
       <div 
         key={property.id} 
         className={`property-card ${isOwned ? 'owned' : ''} ${isOwnedByOther ? 'competitor' : ''}`}
-        style={{
-          borderLeft: isOwned ? `4px solid ${riskColor}` : undefined
-        }}
+        style={{ borderColor: theme.accent, boxShadow: `0 25px 35px -25px ${theme.glow}` }}
       >
-        <h3>{property.name}</h3>
-        <p className="city-name">📍 {city?.name}</p>
-        <p className="category">🏷️ {property.category}</p>
-        <p className="group">🔗 グループ: {property.group}</p>
-        
-        <div className="property-stats">
-          <div className="stat">
-            <span className="label">相場価格</span>
-            <span className="value">{property.basePrice.toLocaleString()} G</span>
+        <div className="card-highlight" style={{ background: theme.glow }} aria-hidden />
+        <div className="card-header">
+          <div>
+            <span className="city-chip" style={{ borderColor: theme.accent }}>{city?.name}</span>
+            <h3>{property.name}</h3>
           </div>
-          <div className="stat">
-            <span className="label">日々の収入</span>
-            <span className="value">{property.income.toLocaleString()} G</span>
-          </div>
-          
-          {isOwned && (
-            <div className="stat">
-              <span className="label">独立危険度</span>
-              <span className="value" style={{ color: riskColor }}>
-                {riskLabel} ({property.independenceRisk})
-              </span>
-            </div>
-          )}
+          <span className="category-icon" aria-hidden>{categoryIcon}</span>
         </div>
-        
+        <p className="category-label">{property.category}</p>
+        <p className="group-chip">グループ: {property.group}</p>
         <p className="description">{property.description}</p>
         
-        {!isOwned && !isOwnedByOther && (
-          <button 
-            className="acquire-btn"
-            onClick={() => startAcquisition(property.id)}
-          >
-            買収する
-          </button>
-        )}
-        
+        <div className="property-stats-grid">
+          <div className="stat">
+            <span>相場価格</span>
+            <strong>{property.basePrice.toLocaleString()} G</strong>
+          </div>
+          <div className="stat">
+            <span>日々の収入</span>
+            <strong>+{property.income.toLocaleString()} G</strong>
+          </div>
+        </div>
+
+        <div className="risk-meter">
+          <div className="risk-label">
+            <span>独立危険度</span>
+            <strong style={{ color: riskColor }}>{riskLabel}</strong>
+          </div>
+          <div className="risk-track">
+            <div className="risk-fill" style={{ width: `${riskPercent}%`, backgroundColor: riskColor }} />
+          </div>
+        </div>
+
+        <div className="card-actions">
+          {!isOwned && !isOwnedByOther ? (
+            <button 
+              className="acquire-btn"
+              onClick={() => startAcquisition(property.id)}
+            >
+              買収する
+            </button>
+          ) : (
+            <button className="acquire-btn" disabled>
+              {isOwned ? '所有中' : '他社所有' }
+            </button>
+          )}
+        </div>
+
         {isOwned && (
-          <div className="owned-badge">✓ 所有中</div>
+          <span className="status-chip owned">✓ 所有中</span>
         )}
         
         {isOwnedByOther && (
-          <div className="competitor-badge">他社所有</div>
+          <span className="status-chip rival">他社所有</span>
         )}
       </div>
     );
@@ -167,24 +221,26 @@ export const PropertyView = ({ gameState, setGameState }: PropertyViewProps) => 
   return (
     <div className="property-view">
       <div className="property-summary">
-        <h2>🏢 物件管理</h2>
+        <div>
+          <h2>🏢 物件管理</h2>
+          <p>物件を買収して資産を増やしましょう</p>
+        </div>
         <div className="summary-stats">
           <div className="stat-box">
-            <div className="stat-label">所有物件</div>
-            <div className="stat-value">{ownedProperties.length} / {gameState.properties.length}</div>
+            <span>所有物件</span>
+            <strong>{ownedProperties.length} / {gameState.properties.length}</strong>
           </div>
           <div className="stat-box">
-            <div className="stat-label">日々の収入</div>
-            <div className="stat-value">{dailyIncome.toLocaleString()} G</div>
+            <span>日々の収入</span>
+            <strong>{dailyIncome.toLocaleString()} G</strong>
           </div>
           <div className="stat-box">
-            <div className="stat-label">総資産価値</div>
-            <div className="stat-value">
+            <span>総資産価値</span>
+            <strong>
               {ownedProperties.reduce((sum, p) => sum + p.basePrice, 0).toLocaleString()} G
-            </div>
+            </strong>
           </div>
         </div>
-        
         {ownedProperties.length > 0 && (
           <button onClick={advanceDay} className="advance-day-btn">
             📅 日を進める（収益回収）
@@ -192,9 +248,9 @@ export const PropertyView = ({ gameState, setGameState }: PropertyViewProps) => 
         )}
       </div>
       
-      <div className="property-filters">
+      <div className="filter-bar">
         <div className="filter-group">
-          <label>都市:</label>
+          <label>都市で絞り込み</label>
           <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)}>
             <option value="all">すべて</option>
             {cities.map(city => (
@@ -204,7 +260,7 @@ export const PropertyView = ({ gameState, setGameState }: PropertyViewProps) => 
         </div>
         
         <div className="filter-group">
-          <label>グループ:</label>
+          <label>グループ</label>
           <select value={selectedGroup} onChange={(e) => setSelectedGroup(e.target.value)}>
             <option value="all">すべて</option>
             {allGroups.sort().map(group => (
@@ -212,6 +268,9 @@ export const PropertyView = ({ gameState, setGameState }: PropertyViewProps) => 
             ))}
           </select>
         </div>
+        <button className="ghost-btn" onClick={() => { setSelectedCity('all'); setSelectedGroup('all'); }}>
+          フィルターをクリア
+        </button>
       </div>
       
       <div className="property-list">

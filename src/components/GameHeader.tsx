@@ -20,32 +20,20 @@ export const GameHeader = ({ gameState }: GameHeaderProps) => {
   };
   
   return (
-    <header className="game-header">
-      <h1>🎮 ロマンシングサガ3 トレードゲーム</h1>
-      <div className="player-info">
-        <div className="info-item">
-          <span className="label">商会名:</span>
-          <span className="value">{gameState.player.companyName}</span>
+    <header className="game-header compact">
+      <div className="company-meta">
+        <p className="eyebrow">商会</p>
+        <h2>{gameState.player.companyName}</h2>
+        <p className="quest-label">{getQuestStageLabel(gameState.player.questStage)}</p>
+      </div>
+      <div className="header-stats">
+        <div className="header-stat">
+          <span>現在地</span>
+          <strong>{currentCity?.name || 'バンガード'}</strong>
         </div>
-        <div className="info-item">
-          <span className="label">現在資金:</span>
-          <span className="value gold">{gameState.player.capital.toLocaleString()} G</span>
-        </div>
-        <div className="info-item">
-          <span className="label">総資産:</span>
-          <span className="value assets">{gameState.player.totalAssets.toLocaleString()} G</span>
-        </div>
-        <div className="info-item">
-          <span className="label">現在地:</span>
-          <span className="value">{currentCity?.name || 'バンガード'}</span>
-        </div>
-        <div className="info-item">
-          <span className="label">日数:</span>
-          <span className="value">{gameState.player.currentDay}日目</span>
-        </div>
-        <div className="info-item quest-stage">
-          <span className="label">クエスト:</span>
-          <span className="value">{getQuestStageLabel(gameState.player.questStage)}</span>
+        <div className="header-stat">
+          <span>日数</span>
+          <strong>{gameState.player.currentDay}日目</strong>
         </div>
       </div>
     </header>
