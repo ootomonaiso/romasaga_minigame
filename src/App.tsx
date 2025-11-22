@@ -11,6 +11,7 @@ import { cities } from './data/cities'
 function App() {
   const [gameState, setGameState] = useState<GameState>(createInitialGameState())
   const [activeTab, setActiveTab] = useState<'properties' | 'groups' | 'techniques'>('properties')
+  const [activePanel, setActivePanel] = useState<'player' | 'content' | 'trade'>('content')
 
   // 総資産を更新
   const updatedTotalAssets = calculateTotalAssets(
@@ -42,8 +43,19 @@ function App() {
   return (
     <div className="app-shell">
       <div className="background-texture" aria-hidden />
+      
+      {/* トップバー（資金状況） */}
+      <header className="top-bar">
+        <div className="top-bar-brand">Trade Legends</div>
+        <div className="top-bar-stats">
+          <span className="top-stat">💰 {gameState.player.capital.toLocaleString()} G</span>
+          <span className="top-stat">📊 {updatedTotalAssets.toLocaleString()} G</span>
+          <span className="top-stat">📈 +{dailyIncome.toLocaleString()} G/日</span>
+        </div>
+      </header>
+
       <div className="game-layout">
-        <aside className="sidebar">
+        <aside className={`sidebar ${activePanel === 'player' ? 'mobile-active' : ''}`}>
           <div className="brand-mark">
             <p className="eyebrow">Romancing SaGa III</p>
             <h1>Trade Legends</h1>
@@ -113,7 +125,7 @@ function App() {
           </section>
         </aside>
 
-        <main className="main-panel">
+        <main className={`main-panel ${activePanel === 'content' ? 'mobile-active' : ''}`}>
           <div className="tab-bar">
             <button
               className={activeTab === 'properties' ? 'active' : ''}
@@ -147,7 +159,40 @@ function App() {
             )}
           </div>
         </main>
+
+        {/* トレードパネル(PC時は右側固定) */}
+        <aside className={`trade-panel ${activePanel === 'trade' ? 'mobile-active' : ''}`}>
+          <div className="trade-panel-placeholder">
+            <h3>🎮 トレードゲーム</h3>
+            <p>物件を選択してトレード交渉を開始</p>
+          </div>
+        </aside>
       </div>
+
+      {/* モバイルボトムナビ */}
+      <nav className="bottom-nav">
+        <button
+          className={activePanel === 'player' ? 'active' : ''}
+          onClick={() => setActivePanel('player')}
+        >
+          <span>👤</span>
+          <small>プレイヤー</small>
+        </button>
+        <button
+          className={activePanel === 'content' ? 'active' : ''}
+          onClick={() => setActivePanel('content')}
+        >
+          <span>📋</span>
+          <small>管理</small>
+        </button>
+        <button
+          className={activePanel === 'trade' ? 'active' : ''}
+          onClick={() => setActivePanel('trade')}
+        >
+          <span>🎮</span>
+          <small>トレード</small>
+        </button>
+      </nav>
     </div>
   )
 }

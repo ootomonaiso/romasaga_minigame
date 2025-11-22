@@ -71,8 +71,10 @@ body::before {
 
 .game-layout {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 32px;
+  grid-template-columns: 320px 1fr 380px;
+  gap: 24px;
+  margin-top: 80px;
+  padding-bottom: 24px;
 }
 
 .sidebar {
@@ -1348,6 +1350,13 @@ body::before {
   background-color: #e8f5e9;
 }
 
+.property-card.owned h3,
+.property-card.owned .city-name,
+.property-card.owned .property-info,
+.property-card.owned p {
+  color: #1b5e20;
+}
+
 .property-card h3 {
   color: var(--secondary-color);
   font-size: 1.2rem;
@@ -1742,4 +1751,164 @@ body::before {
 .battle-help p {
   color: var(--secondary-color);
   margin: 0;
+}
+
+/* トップバー（資金表示） */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(15, 11, 28, 0.95);
+  border-bottom: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(20px, 4vw, 60px);
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+.top-bar-brand {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  letter-spacing: 0.02em;
+}
+
+.top-bar-stats {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+}
+
+.top-stat {
+  font-size: 0.95rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* トレードパネル（右側固定） */
+.trade-panel {
+  background: var(--sidebar-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+  position: sticky;
+  top: 94px;
+  height: fit-content;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+.trade-panel-placeholder {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.trade-panel-placeholder h3 {
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+  color: var(--accent-color);
+}
+
+.trade-panel-placeholder p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ボトムナビ（モバイル） */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(15, 11, 28, 0.98);
+  border-top: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  padding: 8px;
+  z-index: 100;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.25);
+}
+
+.bottom-nav button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.bottom-nav button span {
+  font-size: 1.5rem;
+}
+
+.bottom-nav button small {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.bottom-nav button.active {
+  background: rgba(240, 180, 0, 0.15);
+  color: var(--accent-color);
+}
+
+/* レスポンシブ: 3カラム → モバイルナビ */
+@media (max-width: 1280px) {
+  .game-layout {
+    grid-template-columns: 1fr;
+    margin-top: 80px;
+    padding-bottom: 80px;
+  }
+
+  .sidebar,
+  .trade-panel {
+    display: none;
+  }
+
+  .sidebar.mobile-active,
+  .trade-panel.mobile-active {
+    display: block;
+    position: static;
+  }
+
+  .main-panel.mobile-active {
+    display: block;
+  }
+
+  .main-panel:not(.mobile-active) {
+    display: none;
+  }
+
+  .bottom-nav {
+    display: flex;
+  }
+
+  .top-bar-stats .top-stat:nth-child(n+2) {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .top-bar-brand {
+    font-size: 1rem;
+  }
+
+  .top-stat {
+    font-size: 0.85rem;
+  }
 }
