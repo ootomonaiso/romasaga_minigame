@@ -4,6 +4,7 @@ import type { GameState } from './types/game'
 import { createInitialGameState, calculateTotalAssets, calculateDailyIncome } from './data/gameState'
 import { PropertyView } from './components/PropertyView'
 import { GameHeader } from './components/GameHeader'
+import { GroupTechniqueView } from './components/GroupTechniqueView'
 import { cities } from './data/cities'
 
 function App() {
@@ -138,25 +139,7 @@ function App() {
               <PropertyView gameState={gameState} setGameState={setGameState} />
             )}
             {activeTab === 'groups' && (
-              <div className="coming-soon">
-                <h2>グループ技</h2>
-                <p>実装予定: グループに所属する物件から一括で資金を要求する技</p>
-                <div className="group-list">
-                  {gameState.groupTechniques.map(tech => (
-                    <div key={tech.id} className={`group-card ${tech.isUnlocked ? 'unlocked' : 'locked'}`}>
-                      <h3>{tech.name}</h3>
-                      <p>{tech.description}</p>
-                      <p>基本獲得額: {tech.baseAmount.toLocaleString()} G</p>
-                      <p>所属物件数: {tech.propertyIds.length}</p>
-                      {tech.isUnlocked ? (
-                        <span className="status">✓ 習得済み</span>
-                      ) : (
-                        <span className="status">🔒 未習得</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <GroupTechniqueView gameState={gameState} setGameState={setGameState} />
             )}
             {activeTab === 'techniques' && (
               <div className="coming-soon">
