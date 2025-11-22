@@ -146,8 +146,7 @@ export const calculatePropertyFunding = (
 export const calculateGroupFunding = (
   groupTechniqueId: string,
   groupTechniques: GroupTechnique[],
-  ownedProperties: string[],
-  properties: Property[]
+  ownedProperties: string[]
 ): number => {
   const tech = groupTechniques.find(t => t.id === groupTechniqueId);
   if (!tech || !tech.isUnlocked) return 0;

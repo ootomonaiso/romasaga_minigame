@@ -1,73 +1,35 @@
-# React + TypeScript + Vite
+# Romancing SaGa 3 Trade Mini Game
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + TypeScript + Vite で構築したロマサガ3の「買収劇」リメイクです。物件データ、グループ技、交渉技を実装し、買収ミニゲームをブラウザ上で再現しています。
 
-Currently, two official plugins are available:
+## 開発コマンド
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+| コマンド | 説明 |
+| --- | --- |
+| `npm run dev` | Vite 開発サーバー (http://localhost:5173) |
+| `npm run build` | 型チェック + 本番ビルド (`dist/`) |
+| `npm run preview` | ビルド済み成果物のローカル確認 |
 
-## React Compiler
+## GitHub Pages へのデプロイ
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+GitHub Actions Workflow (`.github/workflows/deploy.yml`) で自動ビルドと公開を行います。
 
-## Expanding the ESLint configuration
+1. **リポジトリ設定**
+   - GitHub > Repository > *Settings* > *Pages*
+   - "Source" を **GitHub Actions** に設定
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+2. **ブランチに push する**
+   - `main` ブランチへの push、または手動の *Run workflow* でビルドが開始
+   - Vite の `base` は `GITHUB_PAGES` 環境変数に合わせて `/romasaga_minigame/` に自動設定されます
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+3. **URL の確認**
+   - Actions の `Deploy to GitHub Pages` ジョブが完了すると、Pages URL が表示されます
+   - 例: `https://ootomonaiso.github.io/romasaga_minigame/`
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### ワークフローの内容
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- Node.js 20 で `npm ci` → `npm run build`
+- `dist/` を `actions/upload-pages-artifact` で保存
+- `actions/deploy-pages` で GitHub Pages に公開
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+リポジトリ名を変更した際は `vite.config.ts` 内の `repositoryName` を同じ値に更新してください。

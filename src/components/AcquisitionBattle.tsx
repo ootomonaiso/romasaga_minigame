@@ -118,8 +118,7 @@ export const AcquisitionBattleComponent = ({
     const funds = calculateGroupFunding(
       randomGroup.id,
       gameState.groupTechniques,
-      gameState.player.ownedProperties,
-      gameState.properties
+      gameState.player.ownedProperties
     );
     
     setPlayerFunds(prev => prev + funds);
