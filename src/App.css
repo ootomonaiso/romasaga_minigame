@@ -491,3 +491,238 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Acquisition Battle Styles */
+.acquisition-battle-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.acquisition-battle {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 30px;
+  max-width: 900px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.battle-header {
+  text-align: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.battle-header h2 {
+  color: var(--accent-color);
+  margin-bottom: 10px;
+  font-size: 2em;
+}
+
+.target-property {
+  font-size: 1.2em;
+  color: var(--secondary-color);
+  font-weight: bold;
+}
+
+.close-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.5em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: #c0392b;
+  transform: rotate(90deg);
+}
+
+.battle-info {
+  margin-bottom: 30px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.player-info, .opponent-info {
+  flex: 1;
+  padding: 15px;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.player-info {
+  border-left: 4px solid var(--success-color);
+}
+
+.opponent-info {
+  border-left: 4px solid var(--accent-color);
+  text-align: right;
+}
+
+.player-info h3, .opponent-info h3 {
+  color: var(--secondary-color);
+  margin-bottom: 10px;
+}
+
+.vs {
+  font-size: 2em;
+  font-weight: bold;
+  color: var(--accent-color);
+}
+
+/* ストライプゲージ */
+.gauge-container {
+  margin: 30px 0;
+}
+
+.gauge-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 0.9em;
+  color: var(--primary-color);
+}
+
+.gauge-label-center {
+  text-align: center;
+}
+
+.stripe-gauge {
+  position: relative;
+  height: 40px;
+  background: linear-gradient(
+    to right,
+    #e74c3c 0%,
+    #e67e22 25%,
+    #f39c12 50%,
+    #2ecc71 75%,
+    #27ae60 100%
+  );
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.gauge-indicator {
+  position: absolute;
+  top: -5px;
+  transform: translateX(-50%);
+  font-size: 2em;
+  color: #2c3e50;
+  text-shadow: 0 0 5px rgba(255,255,255,0.8);
+  transition: left 0.05s linear;
+  z-index: 10;
+}
+
+.gauge-percentage {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.opponent-percent {
+  color: var(--accent-color);
+}
+
+.player-percent {
+  color: var(--success-color);
+}
+
+/* メッセージエリア */
+.battle-message {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  min-height: 60px;
+  border-left: 4px solid var(--accent-color);
+}
+
+.battle-message p {
+  color: var(--secondary-color);
+  font-size: 1.1em;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* コマンドボタン */
+.command-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.command-btn {
+  padding: 15px 20px;
+  font-size: 1em;
+  font-weight: bold;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--secondary-color);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.command-btn:hover:not(:disabled) {
+  background: var(--success-color);
+  color: white;
+  border-color: var(--success-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.command-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.command-btn.danger:hover:not(:disabled) {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.battle-help {
+  background: #e8f5e9;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+  border-left: 4px solid var(--success-color);
+}
+
+.battle-help p {
+  color: var(--secondary-color);
+  margin: 0;
+}

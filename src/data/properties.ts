@@ -1,48 +1,570 @@
-// ロマサガ3 物件データ（一部抜粋）
+// ロマサガ3 物件データ
 import type { Property } from '../types/game';
 
 export const properties: Property[] = [
   // バンガード
-  { id: 'prop_001', name: 'ルーブのひつじかい', cityId: 'vanguard', category: 'ルーブ織', baseIncome: 5000, purchasePrice: 50000, owned: false },
-  { id: 'prop_002', name: 'ネッドのルーブ織工房', cityId: 'vanguard', category: 'ルーブ織', baseIncome: 8000, purchasePrice: 80000, owned: false },
-  { id: 'prop_003', name: 'グッドフェローズ', cityId: 'vanguard', category: '西風のめぐみ', baseIncome: 6000, purchasePrice: 60000, owned: false },
-  { id: 'prop_004', name: 'バンガードタイムズ', cityId: 'vanguard', category: '情報', baseIncome: 7000, purchasePrice: 100000, owned: false },
-  { id: 'prop_005', name: 'オコンネル水産', cityId: 'vanguard', category: '西風のめぐみ', baseIncome: 6000, purchasePrice: 70000, owned: false },
-  
+  { 
+    id: 'rube_shepherd', 
+    name: 'ルーブのひつじかい', 
+    cityId: 'vanguard', 
+    category: '牧場', 
+    group: 'horse', 
+    basePrice: 50000, 
+    income: 3000, 
+    independenceRisk: 10, 
+    ownerId: null,
+    description: 'バンガードの牧羊業者'
+  },
+  { 
+    id: 'ned_rube_textile', 
+    name: 'ネッドのルーブ織工房', 
+    cityId: 'vanguard', 
+    category: '織物', 
+    group: 'textile', 
+    basePrice: 80000, 
+    income: 4500, 
+    independenceRisk: 15, 
+    ownerId: null,
+    description: 'ルーブ織の名門工房'
+  },
+  { 
+    id: 'vanguard_paper', 
+    name: 'バンガード製紙', 
+    cityId: 'vanguard', 
+    category: '製紙', 
+    group: 'paper', 
+    basePrice: 70000, 
+    income: 4000, 
+    independenceRisk: 12, 
+    ownerId: null,
+    description: '製紙業を営む'
+  },
+  { 
+    id: 'vanguard_times', 
+    name: 'バンガードタイムズ', 
+    cityId: 'vanguard', 
+    category: '出版', 
+    group: 'information', 
+    basePrice: 100000, 
+    income: 5500, 
+    independenceRisk: 18, 
+    ownerId: null,
+    description: '情報と出版を扱う'
+  },
+  { 
+    id: 'oconnell_fishery', 
+    name: 'オコンネル水産', 
+    cityId: 'vanguard', 
+    category: '水産', 
+    group: 'west_wind', 
+    basePrice: 70000, 
+    income: 4200, 
+    independenceRisk: 14, 
+    ownerId: null,
+    description: '西部地域の水産業'
+  },
+  { 
+    id: 'smith_weapons', 
+    name: 'スミスウェポンズ', 
+    cityId: 'vanguard', 
+    category: '武器', 
+    group: 'weapons', 
+    basePrice: 95000, 
+    income: 5000, 
+    independenceRisk: 16, 
+    ownerId: null,
+    description: '武器製造の老舗'
+  },
+  { 
+    id: 'vanguard_shipyard', 
+    name: 'バンガード造船所', 
+    cityId: 'vanguard', 
+    category: '造船', 
+    group: 'shipbuilding', 
+    basePrice: 150000, 
+    income: 8000, 
+    independenceRisk: 22, 
+    ownerId: null,
+    description: '静海地域の造船所グループ'
+  },
+
   // ヤーマス
-  { id: 'prop_011', name: 'ヤーマス牧羊ギルド', cityId: 'yamas', category: '大いなる北の大地', baseIncome: 5500, purchasePrice: 55000, owned: false },
-  { id: 'prop_012', name: 'ヤーマスビール', cityId: 'yamas', category: '酒', baseIncome: 7000, purchasePrice: 75000, owned: false },
-  { id: 'prop_013', name: 'ヤーマス塩鉱', cityId: 'yamas', category: '大いなる北の大地', baseIncome: 6500, purchasePrice: 70000, owned: false },
-  
+  { 
+    id: 'yamas_sheep', 
+    name: 'ヤーマス牧羊ギルド', 
+    cityId: 'yamas', 
+    category: '牧場', 
+    group: 'horse', 
+    basePrice: 55000, 
+    income: 3500, 
+    independenceRisk: 11, 
+    ownerId: null,
+    description: '北部地域の牧羊'
+  },
+  { 
+    id: 'yamas_beer', 
+    name: 'ヤーマスビール', 
+    cityId: 'yamas', 
+    category: '酒', 
+    group: 'alcohol', 
+    basePrice: 75000, 
+    income: 4800, 
+    independenceRisk: 15, 
+    ownerId: null,
+    description: 'ビール醸造所'
+  },
+  { 
+    id: 'yamas_salt', 
+    name: 'ヤーマス塩鉱', 
+    cityId: 'yamas', 
+    category: '塩', 
+    group: 'great_north', 
+    basePrice: 70000, 
+    income: 4300, 
+    independenceRisk: 13, 
+    ownerId: null,
+    description: '岩塩を採掘する'
+  },
+  { 
+    id: 'yamas_mill', 
+    name: 'ヤーマス製粉所', 
+    cityId: 'yamas', 
+    category: '小麦', 
+    group: 'great_north', 
+    basePrice: 60000, 
+    income: 3800, 
+    independenceRisk: 10, 
+    ownerId: null,
+    description: '小麦製粉業'
+  },
+  { 
+    id: 'yamas_paper', 
+    name: 'ヤーマス製紙', 
+    cityId: 'yamas', 
+    category: '製紙', 
+    group: 'paper', 
+    basePrice: 72000, 
+    income: 4100, 
+    independenceRisk: 12, 
+    ownerId: null,
+    description: '製紙業を営む'
+  },
+  { 
+    id: 'defore_weapons', 
+    name: 'ドフォーレ武器工場', 
+    cityId: 'yamas', 
+    category: '武器', 
+    group: 'weapons', 
+    basePrice: 98000, 
+    income: 5200, 
+    independenceRisk: 17, 
+    ownerId: 'defore_company',
+    description: 'ドフォーレ商会の武器工場'
+  },
+  { 
+    id: 'yamas_shipyard', 
+    name: 'ヤーマス造船所', 
+    cityId: 'yamas', 
+    category: '造船', 
+    group: 'shipbuilding', 
+    basePrice: 155000, 
+    income: 8200, 
+    independenceRisk: 23, 
+    ownerId: null,
+    description: '静海地域の造船所'
+  },
+
   // モウゼス
-  { id: 'prop_021', name: 'モウゼスワイン', cityId: 'moses', category: '酒', baseIncome: 8000, purchasePrice: 85000, owned: false },
-  { id: 'prop_022', name: 'モウゼスグレイン', cityId: 'moses', category: '西風のめぐみ', baseIncome: 5000, purchasePrice: 50000, owned: false },
-  { id: 'prop_023', name: 'マジシャンギルド', cityId: 'moses', category: 'ポーション', baseIncome: 9000, purchasePrice: 120000, owned: false },
-  
-  // アケ（ジャングルフィーバーグループ）
-  { id: 'prop_031', name: 'オーロラコーヒー', cityId: 'ake', category: 'ジャングルフィーバー', baseIncome: 7000, purchasePrice: 75000, owned: false },
-  { id: 'prop_032', name: 'アケさとうきび農場', cityId: 'ake', category: 'ジャングルフィーバー', baseIncome: 6000, purchasePrice: 65000, owned: false },
-  { id: 'prop_033', name: 'アケ木材', cityId: 'ake', category: 'ジャングルフィーバー', baseIncome: 5500, purchasePrice: 60000, owned: false },
-  { id: 'prop_034', name: 'アケスパイス', cityId: 'ake', category: 'ジャングルフィーバー', baseIncome: 8000, purchasePrice: 90000, owned: false },
-  { id: 'prop_035', name: 'コバルカンパニー', cityId: 'ake', category: 'ジャングルフィーバー', baseIncome: 7500, purchasePrice: 85000, owned: false },
-  
-  // ピドナ
-  { id: 'prop_041', name: 'ハンス商会', cityId: 'pidona', category: 'クラウディウス', baseIncome: 8000, purchasePrice: 100000, owned: false },
-  { id: 'prop_042', name: 'メッサーナワイン', cityId: 'pidona', category: 'マンマ・メッサーナ', baseIncome: 9000, purchasePrice: 110000, owned: false },
-  { id: 'prop_043', name: 'ピドナ水産', cityId: 'pidona', category: 'マンマ・メッサーナ', baseIncome: 7000, purchasePrice: 80000, owned: false },
-  { id: 'prop_044', name: 'レオナルド武器工房', cityId: 'pidona', category: 'メッサーナ工房', baseIncome: 8500, purchasePrice: 95000, owned: false },
-  
-  // ランス
-  { id: 'prop_051', name: 'ステファンブルワリー', cityId: 'lance', category: '酒', baseIncome: 7500, purchasePrice: 80000, owned: false },
-  { id: 'prop_052', name: 'ランス工房', cityId: 'lance', category: 'イスカル水運', baseIncome: 8000, purchasePrice: 90000, owned: false },
-  { id: 'prop_053', name: 'イスカル水運', cityId: 'lance', category: 'イスカル水運', baseIncome: 9000, purchasePrice: 110000, owned: false },
-  
-  // ツヴァイク
-  { id: 'prop_061', name: 'ツヴァイクビール', cityId: 'zweig', category: 'ツヴァイクのいぶくろ', baseIncome: 7000, purchasePrice: 75000, owned: false },
-  { id: 'prop_062', name: 'ツヴァイク武器工房', cityId: 'zweig', category: 'ツヴァイク工房', baseIncome: 8500, purchasePrice: 95000, owned: false },
-  { id: 'prop_063', name: 'ツヴァイクキャラバン', cityId: 'zweig', category: 'クラウディウス', baseIncome: 7500, purchasePrice: 85000, owned: false },
-  
-  // ファルス
-  { id: 'prop_071', name: 'ファルスワイン', cityId: 'falce', category: '酒', baseIncome: 8000, purchasePrice: 85000, owned: false },
-  { id: 'prop_072', name: 'ファルス造船', cityId: 'falce', category: 'イスカル水運', baseIncome: 10000, purchasePrice: 130000, owned: false },
+  { 
+    id: 'moses_wine', 
+    name: 'モウゼスワイン', 
+    cityId: 'moses', 
+    category: '酒', 
+    group: 'alcohol', 
+    basePrice: 85000, 
+    income: 5000, 
+    independenceRisk: 16, 
+    ownerId: null,
+    description: 'ワイン醸造所'
+  },
+  { 
+    id: 'moses_grain', 
+    name: 'モウゼスグレイン', 
+    cityId: 'moses', 
+    category: '小麦', 
+    group: 'west_wind', 
+    basePrice: 50000, 
+    income: 3200, 
+    independenceRisk: 9, 
+    ownerId: null,
+    description: '西風のめぐみグループ'
+  },
+  { 
+    id: 'moses_farm', 
+    name: 'モウゼス牧場', 
+    cityId: 'moses', 
+    category: '牧場', 
+    group: 'west_wind', 
+    basePrice: 58000, 
+    income: 3600, 
+    independenceRisk: 11, 
+    ownerId: null,
+    description: '西部地域の牧場'
+  },
+  { 
+    id: 'moses_fish', 
+    name: 'モウゼスフィッシュ', 
+    cityId: 'moses', 
+    category: '水産', 
+    group: 'west_wind', 
+    basePrice: 68000, 
+    income: 4000, 
+    independenceRisk: 13, 
+    ownerId: null,
+    description: '西部地域の水産業'
+  },
+  { 
+    id: 'moses_robe', 
+    name: 'モウゼスローブ', 
+    cityId: 'moses', 
+    category: '織物', 
+    group: 'textile', 
+    basePrice: 82000, 
+    income: 4700, 
+    independenceRisk: 15, 
+    ownerId: null,
+    description: 'ルーブ織工房関連'
+  },
+  { 
+    id: 'magician_guild', 
+    name: 'マジシャンギルド', 
+    cityId: 'moses', 
+    category: 'ポーション', 
+    group: 'potion', 
+    basePrice: 120000, 
+    income: 6500, 
+    independenceRisk: 20, 
+    ownerId: null,
+    description: '魔法と薬を扱う'
+  },
+
+  // アケ（ジャングルフィーバーグループ - 序盤最強）
+  { 
+    id: 'aurora_coffee', 
+    name: 'オーロラコーヒー', 
+    cityId: 'ake', 
+    category: 'コーヒー', 
+    group: 'jungle_fever', 
+    basePrice: 75000, 
+    income: 4500, 
+    independenceRisk: 14, 
+    ownerId: null,
+    description: 'ジャングルフィーバーグループ'
+  },
+  { 
+    id: 'ake_sugarcane', 
+    name: 'アケさとうきび農場', 
+    cityId: 'ake', 
+    category: 'さとう', 
+    group: 'jungle_fever', 
+    basePrice: 65000, 
+    income: 4000, 
+    independenceRisk: 12, 
+    ownerId: null,
+    description: 'さとうきび農場'
+  },
+  { 
+    id: 'ake_lumber', 
+    name: 'アケ木材', 
+    cityId: 'ake', 
+    category: '木材', 
+    group: 'jungle_fever', 
+    basePrice: 60000, 
+    income: 3800, 
+    independenceRisk: 11, 
+    ownerId: null,
+    description: 'ジャングルの木材'
+  },
+  { 
+    id: 'ake_spice', 
+    name: 'アケスパイス', 
+    cityId: 'ake', 
+    category: 'スパイス', 
+    group: 'jungle_fever', 
+    basePrice: 90000, 
+    income: 5500, 
+    independenceRisk: 17, 
+    ownerId: null,
+    description: '貴重なスパイス'
+  },
+  { 
+    id: 'kobal_company', 
+    name: 'コバルカンパニー', 
+    cityId: 'ake', 
+    category: '観光', 
+    group: 'jungle_fever', 
+    basePrice: 85000, 
+    income: 5000, 
+    independenceRisk: 15, 
+    ownerId: null,
+    description: 'エンターテイメント企業'
+  },
+
+  // ウィルミントン
+  { 
+    id: 'garter_tea', 
+    name: 'ガーターティー', 
+    cityId: 'wilmington', 
+    category: 'お茶', 
+    group: 'tea_coffee', 
+    basePrice: 70000, 
+    income: 4300, 
+    independenceRisk: 13, 
+    ownerId: null,
+    description: 'お茶の名産'
+  },
+  { 
+    id: 'colombo_fishery', 
+    name: 'コロンボ水産', 
+    cityId: 'wilmington', 
+    category: '水産', 
+    group: 'west_wind', 
+    basePrice: 72000, 
+    income: 4400, 
+    independenceRisk: 14, 
+    ownerId: null,
+    description: '西風の水産'
+  },
+  { 
+    id: 'demanda_pottery', 
+    name: 'デマンダ陶器', 
+    cityId: 'wilmington', 
+    category: 'セラミックス', 
+    group: 'ceramics', 
+    basePrice: 78000, 
+    income: 4600, 
+    independenceRisk: 14, 
+    ownerId: null,
+    description: '陶器工房'
+  },
+  { 
+    id: 'charles_workshop', 
+    name: 'チャールズ自由工房', 
+    cityId: 'wilmington', 
+    category: '武器', 
+    group: 'weapons', 
+    basePrice: 92000, 
+    income: 4900, 
+    independenceRisk: 16, 
+    ownerId: null,
+    description: '自由な武器職人'
+  },
+  { 
+    id: 'wilmington_shipyard', 
+    name: 'ウィルミントン造船所', 
+    cityId: 'wilmington', 
+    category: '造船', 
+    group: 'shipbuilding', 
+    basePrice: 152000, 
+    income: 8100, 
+    independenceRisk: 23, 
+    ownerId: null,
+    description: '静海地域の造船所'
+  },
+  { 
+    id: 'hotel_byron', 
+    name: 'ホテルバイロン', 
+    cityId: 'wilmington', 
+    category: 'ホテル', 
+    group: 'hotel', 
+    basePrice: 110000, 
+    income: 6000, 
+    independenceRisk: 18, 
+    ownerId: null,
+    description: '高級ホテル'
+  },
+
+  // グレートアーチ
+  { 
+    id: 'tropico_sugar', 
+    name: 'トロピコシュガー', 
+    cityId: 'great_arch', 
+    category: 'さとう', 
+    group: 'sugar', 
+    basePrice: 68000, 
+    income: 4100, 
+    independenceRisk: 12, 
+    ownerId: null,
+    description: 'さとうきび農場'
+  },
+  { 
+    id: 'southern_timber', 
+    name: 'サザンティンバー', 
+    cityId: 'great_arch', 
+    category: '木材', 
+    group: 'jungle_fever', 
+    basePrice: 62000, 
+    income: 3900, 
+    independenceRisk: 11, 
+    ownerId: null,
+    description: 'ジャングルの木材'
+  },
+  { 
+    id: 'twilight_peppers', 
+    name: 'トワイライトペパーズ', 
+    cityId: 'great_arch', 
+    category: 'スパイス', 
+    group: 'jungle_fever', 
+    basePrice: 88000, 
+    income: 5400, 
+    independenceRisk: 16, 
+    ownerId: null,
+    description: '貴重なスパイス'
+  },
+  { 
+    id: 'cotton_fields', 
+    name: 'コットンフィールズ', 
+    cityId: 'great_arch', 
+    category: '綿花', 
+    group: 'messana_textile_group', 
+    basePrice: 65000, 
+    income: 4000, 
+    independenceRisk: 12, 
+    ownerId: null,
+    description: '綿花農場'
+  },
+  { 
+    id: 'hotel_ballantine', 
+    name: 'ホテルバランタイン', 
+    cityId: 'great_arch', 
+    category: 'ホテル', 
+    group: 'hotel', 
+    basePrice: 108000, 
+    income: 5900, 
+    independenceRisk: 18, 
+    ownerId: null,
+    description: '高級ホテル'
+  },
+
+  // リブロフ
+  { 
+    id: 'ribrof_mill', 
+    name: 'リブロフ製粉場', 
+    cityId: 'ribrof', 
+    category: '小麦', 
+    group: 'ribrof_blue_sea', 
+    basePrice: 58000, 
+    income: 3700, 
+    independenceRisk: 10, 
+    ownerId: null,
+    description: 'リブロフの製粉所'
+  },
+  { 
+    id: 'tuik_wine', 
+    name: 'トゥイクワイン', 
+    cityId: 'ribrof', 
+    category: '酒', 
+    group: 'alcohol', 
+    basePrice: 80000, 
+    income: 4800, 
+    independenceRisk: 15, 
+    ownerId: null,
+    description: 'ワイン醸造所'
+  },
+  { 
+    id: 'tuik_tea', 
+    name: 'トゥイクティー', 
+    cityId: 'ribrof', 
+    category: 'お茶', 
+    group: 'tea_coffee', 
+    basePrice: 72000, 
+    income: 4400, 
+    independenceRisk: 13, 
+    ownerId: null,
+    description: 'お茶の名産'
+  },
+  { 
+    id: 'nikita_farm', 
+    name: 'ニキータ農場', 
+    cityId: 'ribrof', 
+    category: '綿花', 
+    group: 'messana_textile_group', 
+    basePrice: 64000, 
+    income: 3950, 
+    independenceRisk: 11, 
+    ownerId: null,
+    description: '綿花農場'
+  },
+  { 
+    id: 'adamsky_farm', 
+    name: 'アダムスキー牧場', 
+    cityId: 'ribrof', 
+    category: '牧場', 
+    group: 'messana_textile_group', 
+    basePrice: 60000, 
+    income: 3800, 
+    independenceRisk: 11, 
+    ownerId: null,
+    description: '牧羊業'
+  },
+  { 
+    id: 'vladimir_fishery', 
+    name: 'ウラジミール水産', 
+    cityId: 'ribrof', 
+    category: '水産', 
+    group: 'ribrof_blue_sea', 
+    basePrice: 70000, 
+    income: 4200, 
+    independenceRisk: 13, 
+    ownerId: null,
+    description: 'リブロフの水産業'
+  },
+  { 
+    id: 'ribrof_tools', 
+    name: 'リブロフ農具工房', 
+    cityId: 'ribrof', 
+    category: '農具', 
+    group: 'farm_tools', 
+    basePrice: 68000, 
+    income: 4000, 
+    independenceRisk: 12, 
+    ownerId: null,
+    description: '農具製造'
+  },
+  { 
+    id: 'tuik_forestry', 
+    name: 'トゥイク林業', 
+    cityId: 'ribrof', 
+    category: '木材', 
+    group: 'lumber', 
+    basePrice: 63000, 
+    income: 3900, 
+    independenceRisk: 11, 
+    ownerId: null,
+    description: '林業を営む'
+  },
+  { 
+    id: 'scheherazade', 
+    name: 'シェヘラザーデ', 
+    cityId: 'ribrof', 
+    category: 'パブ', 
+    group: 'ribrof_blue_sea', 
+    basePrice: 95000, 
+    income: 5500, 
+    independenceRisk: 17, 
+    ownerId: null,
+    description: 'リブロフの名店'
+  },
+  { 
+    id: 'hotel_ribrof', 
+    name: 'ホテルリブロフ', 
+    cityId: 'ribrof', 
+    category: 'ホテル', 
+    group: 'hotel', 
+    basePrice: 105000, 
+    income: 5800, 
+    independenceRisk: 17, 
+    ownerId: null,
+    description: '高級ホテル'
+  },
 ];
