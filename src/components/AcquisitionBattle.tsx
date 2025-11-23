@@ -1,5 +1,6 @@
 // トレード交渉 - ストライプゲージによる交渉ミニゲーム
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import type { AcquisitionBattle, Property, GameState } from '../types/game'
 import {
   calculatePropertyFunding,
@@ -425,7 +426,7 @@ export const AcquisitionBattleComponent = ({
 
   const locationLabel = city?.name ?? '未知の都市';
 
-  return (
+  const battleContent = (
     <div className="acquisition-battle-overlay">
       <div className="acquisition-battle battle-enter">
         {battleResult && (
@@ -595,5 +596,11 @@ export const AcquisitionBattleComponent = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+
+  if (typeof document !== 'undefined') {
+    return createPortal(battleContent, document.body)
+  }
+
+  return battleContent
+}

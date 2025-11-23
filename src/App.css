@@ -246,6 +246,8 @@ body::before {
   border-radius: 20px;
   padding: 22px;
   margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
 }
 
 .property-summary h2 {
@@ -1806,17 +1808,30 @@ body::before {
   min-height: 200px;
   max-height: calc(100vh - 120px);
   overflow-y: auto;
-}
-
-.trade-panel-placeholder {
-  text-align: center;
-  padding: 40px 20px;
-  color: rgba(255, 255, 255, 0.6);
-  min-height: 150px;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 24px;
+}
+
+.trade-panel-placeholder {
+  text-align: center;
+  padding: 48px 32px;
+  color: rgba(255, 255, 255, 0.75);
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 520px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(240, 180, 0, 0.15), rgba(82, 255, 168, 0.08));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 25px 50px -30px rgba(0, 0, 0, 0.6);
 }
 
 .trade-panel-placeholder h3 {
@@ -1828,6 +1843,94 @@ body::before {
 .trade-panel-placeholder p {
   font-size: 0.9rem;
   line-height: 1.6;
+}
+
+.placeholder-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.trade-panel-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.trade-panel-metrics div {
+  background: rgba(18, 12, 24, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.trade-panel-metrics small {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 0.05em;
+}
+
+.trade-panel-metrics strong {
+  font-size: 1.2rem;
+  color: var(--primary-color);
+}
+
+.trade-placeholder-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.trade-placeholder-steps li {
+  padding-left: 16px;
+  position: relative;
+}
+
+.trade-placeholder-steps li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-color);
+}
+
+.trade-panel-action {
+  margin-top: 8px;
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 999px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #120c18;
+  background: linear-gradient(135deg, var(--accent-color), #f67212);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.trade-panel-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
 }
 
 /* ボトムナビ（モバイル） */
@@ -1894,10 +1997,17 @@ body::before {
 
   .trade-panel.mobile-active {
     display: block;
-    position: static;
-    max-height: calc(100vh - 160px);
+    position: relative;
+    max-height: none;
+    min-height: calc(100vh - 160px);
     height: auto;
-    overflow-y: auto;
+    overflow-y: visible;
+    z-index: 5;
+    width: 100%;
+    max-width: 100%;
+    padding: 32px 20px 110px;
+    margin: 0;
+    justify-content: center;
   }
 
   .main-panel.mobile-active {

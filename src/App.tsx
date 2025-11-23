@@ -181,6 +181,10 @@ function App() {
     }
   }
 
+  const openPropertyPanel = () => {
+    setActivePanel('content')
+  }
+
   const handleTradeCancelled = () => {
     setActiveTrade(null)
     notify('info', 'トレード交渉を終了しました')
@@ -418,8 +422,29 @@ function App() {
             />
           ) : (
             <div className="trade-panel-placeholder">
-              <h3>🎮 トレードゲーム</h3>
-              <p>物件を選択してトレード交渉を開始</p>
+              <div className="placeholder-icon">🎮</div>
+              <h3>トレードセンター</h3>
+              <p>物件一覧からターゲットを選んで交渉を始めましょう。</p>
+              <div className="trade-panel-metrics">
+                <div>
+                  <small>保有資金</small>
+                  <strong>{gameState.player.capital.toLocaleString()} G</strong>
+                </div>
+                <div>
+                  <small>解放済み技</small>
+                  <strong>
+                    {unlockedNegotiations}/{gameState.negotiationTechniques.length}
+                  </strong>
+                </div>
+              </div>
+              <ul className="trade-placeholder-steps">
+                <li>1. 物件管理タブで買収したい物件を選択</li>
+                <li>2. ステータスを確認しながら資金計画</li>
+                <li>3. 交渉技を駆使してゲージを自社側に!</li>
+              </ul>
+              <button type="button" className="trade-panel-action" onClick={openPropertyPanel}>
+                物件一覧へ戻る
+              </button>
             </div>
           )}
         </aside>
