@@ -7,10 +7,7 @@ import {
   getIndependenceRiskLabel, 
   calculateDailyIncome,
   canAcquireProperty,
-  checkGroupTechniqueUnlock,
-  checkNegotiationTechniqueUnlock,
 } from '../data/gameState';
-import { AcquisitionBattleComponent } from './AcquisitionBattle';
 import { useNotifications } from '../context/NotificationContext';
 
 const categoryIcons: Record<string, string> = {
@@ -50,15 +47,32 @@ const getCityTheme = (cityId: string) => cityThemes[cityId] ?? { accent: '#c8b6a
 interface PropertyViewProps {
   gameState: GameState;
   setGameState: React.Dispatch<React.SetStateAction<GameState>>;
-  onTradeStart?: () => void;
-  onTradeEnd?: () => void;
+  onTradeRequested?: (property: Property) => void;
+  onMoveCity?: (cityId: string) => void;
 }
 
-export const PropertyView = ({ gameState, setGameState, onTradeStart, onTradeEnd }: PropertyViewProps) => {
+export const PropertyView = ({ gameState, setGameState, onTradeRequested, onMoveCity }: PropertyViewProps) => {
   const [selectedCity, setSelectedCity] = useState('all');
   const [selectedGroup, setSelectedGroup] = useState('all');
-  const [currentBattle, setCurrentBattle] = useState<Property | null>(null);
+  const [travelCity, setTravelCity] = useState(gameState.player.currentCityId);
   const { notify } = useNotifications();
+
+  const handleTravel = () => {
+    if (!onMoveCity) {
+      notify('info', '現在は移動できません');
+      return;
+    }
+
+    if (travelCity === gameState.player.currentCityId) {
+      notify('info', 'すでにその都市に滞在しています');
+      return;
+    }
+
+    onMoveCity(travelCity);
+    const nextCity = cities.find(city => city.id === travelCity);
+    setTravelCity(travelCity);
+    notify('success', `${nextCity?.name ?? travelCity} へ移動しました`);
+  };
 
   const ownedProperties = useMemo(
     () => gameState.properties.filter(p => p.ownerId === 'player'),
@@ -91,92 +105,11 @@ export const PropertyView = ({ gameState, setGameState, onTradeStart, onTradeEnd
     // 買収劇を起動
     const property = gameState.properties.find(p => p.id === propertyId);
     if (property) {
-      setCurrentBattle(property);
-      onTradeStart?.();
+      onTradeRequested?.(property);
     }
     else {
       notify('error', '物件が見つかりません');
     }
-  };
-
-  // 買収劇完了
-  const handleBattleComplete = (success: boolean) => {
-    if (!currentBattle) return;
-
-    if (success) {
-      // 買収成功
-      const property = gameState.properties.find(p => p.id === currentBattle.id);
-      if (property) {
-        const updatedOwnedProperties = [...gameState.player.ownedProperties, property.id];
-        const newlyUnlockedGroupIds = checkGroupTechniqueUnlock(property.id, updatedOwnedProperties, gameState.groupTechniques);
-        const updatedGroupTechniques = newlyUnlockedGroupIds.length > 0
-          ? gameState.groupTechniques.map(tech =>
-              newlyUnlockedGroupIds.includes(tech.id) ? { ...tech, isUnlocked: true } : tech
-            )
-          : gameState.groupTechniques;
-
-        const shouldUnlockNegotiation = checkNegotiationTechniqueUnlock();
-        let negotiationUnlockId: string | null = null;
-        let updatedNegotiationTechniques = gameState.negotiationTechniques;
-
-        if (shouldUnlockNegotiation) {
-          const lockedNegotiations = gameState.negotiationTechniques.filter(tech => !tech.isUnlocked);
-          if (lockedNegotiations.length > 0) {
-            const randomTechnique = lockedNegotiations[Math.floor(Math.random() * lockedNegotiations.length)];
-            negotiationUnlockId = randomTechnique.id;
-            updatedNegotiationTechniques = gameState.negotiationTechniques.map(tech =>
-              tech.id === randomTechnique.id ? { ...tech, isUnlocked: true } : tech
-            );
-          }
-        }
-
-        setGameState({
-          ...gameState,
-          player: {
-            ...gameState.player,
-            capital: gameState.player.capital - property.basePrice,
-            ownedProperties: updatedOwnedProperties,
-            unlockedGroupTechniques: newlyUnlockedGroupIds.length > 0
-              ? Array.from(new Set([...gameState.player.unlockedGroupTechniques, ...newlyUnlockedGroupIds]))
-              : gameState.player.unlockedGroupTechniques,
-            unlockedNegotiationTechniques: negotiationUnlockId
-              ? Array.from(new Set([...gameState.player.unlockedNegotiationTechniques, negotiationUnlockId]))
-              : gameState.player.unlockedNegotiationTechniques,
-          },
-          properties: gameState.properties.map(p =>
-            p.id === property.id ? { ...p, ownerId: 'player' } : p
-          ),
-          groupTechniques: updatedGroupTechniques,
-          negotiationTechniques: updatedNegotiationTechniques,
-        });
-
-        notify('success', `${property.name} の買収に成功しました！`);
-        newlyUnlockedGroupIds.forEach(id => {
-          const unlockedTech = gameState.groupTechniques.find(tech => tech.id === id);
-          if (unlockedTech) {
-            notify('info', `${unlockedTech.name} のグループ技を習得しました！`);
-          }
-        });
-        if (negotiationUnlockId) {
-          const technique = gameState.negotiationTechniques.find(tech => tech.id === negotiationUnlockId);
-          if (technique) {
-            notify('info', `${technique.name} のかけひき技をひらめきました！`);
-          }
-        }
-      }
-    } else {
-      notify('error', '買収に失敗しました...');
-    }
-
-    setCurrentBattle(null);
-    onTradeEnd?.();
-  };
-
-  // 買収劇キャンセル
-  const handleBattleCancel = () => {
-    setCurrentBattle(null);
-    onTradeEnd?.();
-    notify('info', '買収劇を中断しました');
   };
 
   // 日を進める（収益回収）
@@ -292,6 +225,23 @@ export const PropertyView = ({ gameState, setGameState, onTradeStart, onTradeEnd
             </strong>
           </div>
         </div>
+        <div className="travel-controls">
+          <label htmlFor="travel-city">遠征先を選択</label>
+          <div className="travel-controls-row">
+            <select
+              id="travel-city"
+              value={travelCity}
+              onChange={(event) => setTravelCity(event.target.value)}
+            >
+              {cities.map(city => (
+                <option key={city.id} value={city.id}>{city.name}</option>
+              ))}
+            </select>
+            <button type="button" className="travel-btn" onClick={handleTravel}>
+              🧭 移動する
+            </button>
+          </div>
+        </div>
         {ownedProperties.length > 0 && (
           <button onClick={advanceDay} className="advance-day-btn">
             📅 日を進める（収益回収）
@@ -332,15 +282,6 @@ export const PropertyView = ({ gameState, setGameState, onTradeStart, onTradeEnd
         )}
       </div>
 
-      {/* 買収劇モーダル */}
-      {currentBattle && (
-        <AcquisitionBattleComponent
-          property={currentBattle}
-          gameState={gameState}
-          onComplete={handleBattleComplete}
-          onCancel={handleBattleCancel}
-        />
-      )}
     </div>
   );
 };
