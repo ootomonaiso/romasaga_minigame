@@ -1512,7 +1512,7 @@ body::before {
   display: flex;
   align-items: stretch;
   justify-content: flex-end;
-  padding: 32px clamp(20px, 5vw, 60px) 32px 120px;
+  padding: 32px clamp(20px, 5vw, 60px);
   z-index: 1000;
   animation: fadeIn 0.3s ease;
 }
@@ -1536,7 +1536,7 @@ body::before {
 
 @media (max-width: 1024px) {
   .acquisition-battle-overlay {
-    padding: 16px;
+    padding: 16px 16px 90px;
     justify-content: center;
     align-items: center;
   }
@@ -1544,6 +1544,7 @@ body::before {
   .acquisition-battle {
     border-radius: 24px;
     height: auto;
+    max-height: calc(100vh - 120px);
     width: min(95vw, 640px);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
   }
@@ -1880,10 +1881,16 @@ body::before {
     display: none;
   }
 
-  .sidebar.mobile-active,
+  .sidebar.mobile-active {
+    display: block;
+    position: static;
+  }
+
   .trade-panel.mobile-active {
     display: block;
     position: static;
+    max-height: none;
+    height: auto;
   }
 
   .main-panel.mobile-active {

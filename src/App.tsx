@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react'
 import './App.css'
-import type { GameState, Property, GroupTechnique, NegotiationTechnique } from './types/game'
+import type { GameState, Property, GroupTechnique } from './types/game'
 import {
   createInitialGameState,
   calculateTotalAssets,
@@ -12,7 +12,7 @@ import { PropertyView } from './components/PropertyView'
 import { GameHeader } from './components/GameHeader'
 import { GroupTechniqueView } from './components/GroupTechniqueView'
 import { NegotiationTechniqueView } from './components/NegotiationTechniqueView'
-import { AcquisitionBattleComponent, TradeResolution } from './components/AcquisitionBattle'
+import { AcquisitionBattleComponent, type TradeResolution } from './components/AcquisitionBattle'
 import { cities } from './data/cities'
 import { useNotifications } from './context/NotificationContext'
 
