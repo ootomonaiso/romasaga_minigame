@@ -1528,7 +1528,7 @@ body::before {
   background: var(--card-bg);
   border-radius: 28px 0 0 28px;
   padding: 30px;
-  width: min(560px, 100%);
+  width: min(760px, 100%);
   height: 100%;
   overflow-y: auto;
   box-shadow: -20px 0 60px rgba(0, 0, 0, 0.35);
@@ -1549,6 +1549,216 @@ body::before {
     max-height: calc(100vh - 120px);
     width: min(95vw, 640px);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  }
+}
+
+.trade-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.trade-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.trade-breadcrumb strong {
+  color: var(--primary-color);
+}
+
+.crumb-divider {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.trade-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.trade-location-card,
+.trade-phase-track {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.trade-location-card h3 {
+  color: var(--primary-color);
+  margin: 6px 0;
+}
+
+.trade-location-desc {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.trade-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.trade-tag {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.8rem;
+}
+
+.trade-tag.accent {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.trade-phase-track {
+  display: grid;
+  gap: 12px;
+}
+
+.trade-phase-step {
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.trade-phase-step.current {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.trade-phase-step.completed {
+  opacity: 0.7;
+}
+
+.trade-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.trade-brief,
+.trade-engagement {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.trade-property-card,
+.trade-log-panel,
+.trade-status-card,
+.battle-info,
+.gauge-container,
+.command-buttons,
+.battle-help {
+  margin-bottom: 18px;
+}
+
+.trade-property-card h3 {
+  margin: 0;
+}
+
+.trade-property-meta {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.trade-property-meta li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+.trade-log-panel {
+  background: rgba(12, 10, 23, 0.6);
+  border-radius: 16px;
+  padding: 16px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.trade-log {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+
+.trade-log li.player {
+  color: var(--success-color);
+}
+
+.trade-log li.opponent {
+  color: var(--accent-color);
+}
+
+.gauge-container {
+  background: rgba(12, 10, 23, 0.6);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.command-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.command-btn {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.command-btn.danger {
+  border-color: rgba(255, 107, 107, 0.6);
+  color: #ff6b6b;
+}
+
+.battle-help {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@media (max-width: 768px) {
+  .trade-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .trade-header {
+    flex-direction: column;
+  }
+
+  .trade-phase-step {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 }
 
