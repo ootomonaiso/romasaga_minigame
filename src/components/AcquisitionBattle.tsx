@@ -1,21 +1,23 @@
 // トレード交渉 - ストライプゲージによる交渉ミニゲーム
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import type { AcquisitionBattle, Property, GameState } from '../types/game';
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import type { AcquisitionBattle, Property, GameState } from '../types/game'
 import {
   calculatePropertyFunding,
   calculateGroupFunding,
   getIndependenceRiskColor,
   getIndependenceRiskLabel,
-} from '../data/gameState';
-import { cities } from '../data/cities';
+} from '../data/gameState'
+import { cities } from '../data/cities'
 
-type TradePhase = 'entry' | 'funding' | 'negotiation' | 'decision';
+const GAUGE_MAX = 65535
+
+type TradePhase = 'entry' | 'funding' | 'negotiation' | 'decision'
 
 interface TradeLogEntry {
-  id: string;
-  message: string;
-  tone: 'player' | 'opponent';
-  timestamp: string;
+  id: string
+  message: string
+  tone: 'player' | 'opponent'
+  timestamp: string
 }
 
 const tradePhaseSteps: Array<{ key: TradePhase; label: string; hint: string }> = [
@@ -23,26 +25,38 @@ const tradePhaseSteps: Array<{ key: TradePhase; label: string; hint: string }> =
   { key: 'funding', label: '資金調達', hint: '出資元を確保' },
   { key: 'negotiation', label: '交渉', hint: '技で主導権を奪う' },
   { key: 'decision', label: '決着', hint: '勝負の瞬間' },
-];
+]
 
-interface AcquisitionBattleProps {
-  property: Property;
-  gameState: GameState;
-  onComplete: (success: boolean) => void;
-  onCancel: () => void;
+export interface TradeResolution {
+  success: boolean
+  playerFunds: number
+  externalFunds: number
+  capitalContribution: number
+  opponentFunds: number
 }
 
-export const AcquisitionBattleComponent = ({ 
-  property, 
-  gameState, 
+interface AcquisitionBattleProps {
+  property: Property
+  gameState: GameState
+  onComplete: (resolution: TradeResolution) => void
+  onCancel: () => void
+  onSpendCapital: (amount: number) => boolean
+  onAdjustPropertyRisk: (propertyId: string, amount: number) => void
+}
+
+export const AcquisitionBattleComponent = ({
+  property,
+  gameState,
   onComplete,
-  onCancel 
+  onCancel,
+  onSpendCapital,
+  onAdjustPropertyRisk,
 }: AcquisitionBattleProps) => {
   const [battle, setBattle] = useState<AcquisitionBattle>({
     propertyId: property.id,
     opponentCompany: property.ownerId || 'ライバル商会',
     opponentCapital: property.basePrice * 1.5,
-    gaugeValue: 32768,
+    gaugeValue: GAUGE_MAX / 2,
     gaugeSpeed: 0,
     playerAcceleration: 10,
     opponentAcceleration: 8,
@@ -50,16 +64,17 @@ export const AcquisitionBattleComponent = ({
     opponentCommandWaitTime: 120,
     battleDay: 1,
     isPlayerTurn: true,
-  });
+  })
 
-  const [playerFunds, setPlayerFunds] = useState(0);
-  const [opponentFunds, setOpponentFunds] = useState(0);
-  const [message, setMessage] = useState('トレードを開始します！');
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [battleResult, setBattleResult] = useState<'victory' | 'defeat' | null>(null);
-  const [phase, setPhase] = useState<TradePhase>('entry');
+  const [playerExternalFunds, setPlayerExternalFunds] = useState(0)
+  const [playerCapitalContribution, setPlayerCapitalContribution] = useState(0)
+  const [opponentFunds, setOpponentFunds] = useState(0)
+  const [message, setMessage] = useState('トレードを開始します！')
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [battleResult, setBattleResult] = useState<'victory' | 'defeat' | null>(null)
+  const [phase, setPhase] = useState<TradePhase>('entry')
   const [actionLog, setActionLog] = useState<TradeLogEntry[]>(() => {
-    const timestamp = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+    const timestamp = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
     return [
       {
         id: `${Date.now()}-${Math.random().toString(16).slice(2, 6)}`,
@@ -67,30 +82,32 @@ export const AcquisitionBattleComponent = ({
         message: `${property.name} のトレードを開始しました`,
         timestamp,
       },
-    ];
-  });
+    ]
+  })
+
+  const playerFunds = playerExternalFunds + playerCapitalContribution
 
   const confettiPieces = useMemo(
     () =>
       Array.from({ length: 14 }, (_, index) => {
-        const seeded = Math.sin(index * 17 + 1) * 10000;
-        const fractional = seeded - Math.floor(seeded);
+        const seeded = Math.sin(index * 17 + 1) * 10000
+        const fractional = seeded - Math.floor(seeded)
         return {
           delay: `${index * 40}ms`,
           left: `${Math.round(fractional * 100)}%`,
-        };
+        }
       }),
     []
-  );
+  )
 
-  const city = useMemo(() => cities.find(c => c.id === property.cityId), [property.cityId]);
-  const riskColor = useMemo(() => getIndependenceRiskColor(property.independenceRisk), [property.independenceRisk]);
-  const riskLabel = useMemo(() => getIndependenceRiskLabel(property.independenceRisk), [property.independenceRisk]);
-  const gaugePercentage = (battle.gaugeValue / 65535) * 100;
-  const phaseIndex = tradePhaseSteps.findIndex(step => step.key === phase);
+  const city = useMemo(() => cities.find(c => c.id === property.cityId), [property.cityId])
+  const riskColor = useMemo(() => getIndependenceRiskColor(property.independenceRisk), [property.independenceRisk])
+  const riskLabel = useMemo(() => getIndependenceRiskLabel(property.independenceRisk), [property.independenceRisk])
+  const gaugePercentage = (battle.gaugeValue / GAUGE_MAX) * 100
+  const phaseIndex = tradePhaseSteps.findIndex(step => step.key === phase)
 
   const addLogEntry = useCallback((tone: 'player' | 'opponent', entryMessage: string) => {
-    const timestamp = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+    const timestamp = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
     setActionLog(prev => {
       const next = [
         {
@@ -100,191 +117,311 @@ export const AcquisitionBattleComponent = ({
           timestamp,
         },
         ...prev,
-      ];
-      return next.slice(0, 5);
-    });
-  }, []);
+      ]
+      return next.slice(0, 5)
+    })
+  }, [])
 
-  const updateStatus = useCallback((text: string, tone: 'player' | 'opponent' = 'player') => {
-    setMessage(text);
-    addLogEntry(tone, text);
-  }, [addLogEntry]);
+  const updateStatus = useCallback(
+    (text: string, tone: 'player' | 'opponent' = 'player') => {
+      setMessage(text)
+      addLogEntry(tone, text)
+    },
+    [addLogEntry]
+  )
+
+  const concludeBattle = useCallback(
+    (result: 'victory' | 'defeat') => {
+      if (battleResult) return
+      setBattleResult(result)
+      setPhase('decision')
+      updateStatus(result === 'victory' ? 'トレード成立！' : 'トレード失敗...', result === 'victory' ? 'player' : 'opponent')
+      onComplete({
+        success: result === 'victory',
+        playerFunds,
+        externalFunds: playerExternalFunds,
+        capitalContribution: playerCapitalContribution,
+        opponentFunds,
+      })
+    },
+    [battleResult, onComplete, opponentFunds, playerCapitalContribution, playerExternalFunds, playerFunds, updateStatus]
+  )
 
   useEffect(() => {
     const interval = setInterval(() => {
       setBattle(prev => {
-        const newGaugeValue = prev.gaugeValue + prev.gaugeSpeed;
+        const newGaugeValue = prev.gaugeValue + prev.gaugeSpeed
 
         if (newGaugeValue <= 0) {
-          clearInterval(interval);
-          setBattleResult('defeat');
-          setPhase('decision');
-          updateStatus('トレード失敗...', 'opponent');
-          setTimeout(() => onComplete(false), 900);
-          return prev;
+          clearInterval(interval)
+          concludeBattle('defeat')
+          return prev
         }
-        if (newGaugeValue >= 65535) {
-          clearInterval(interval);
-          setBattleResult('victory');
-          setPhase('decision');
-          updateStatus('トレード成立！');
-          setTimeout(() => onComplete(true), 900);
-          return prev;
+        if (newGaugeValue >= GAUGE_MAX) {
+          clearInterval(interval)
+          concludeBattle('victory')
+          return prev
         }
 
-        let newSpeed = prev.gaugeSpeed;
+        let newSpeed = prev.gaugeSpeed
         if (playerFunds > opponentFunds) {
-          newSpeed += prev.playerAcceleration / 10;
+          newSpeed += prev.playerAcceleration / 10
         } else if (opponentFunds > playerFunds) {
-          newSpeed -= prev.opponentAcceleration / 10;
+          newSpeed -= prev.opponentAcceleration / 10
         }
 
         return {
           ...prev,
           gaugeValue: newGaugeValue,
           gaugeSpeed: newSpeed,
-        };
-      });
-    }, 50);
+        }
+      })
+    }, 50)
 
-    return () => clearInterval(interval);
-  }, [playerFunds, opponentFunds, onComplete, updateStatus]);
+    return () => clearInterval(interval)
+  }, [playerFunds, opponentFunds, concludeBattle])
 
   const passTurnToOpponent = () => {
-    setBattle(prev => ({ ...prev, isPlayerTurn: false }));
-  };
+    setBattle(prev => ({ ...prev, isPlayerTurn: false }))
+  }
 
   const requestFunds = () => {
-    if (isAnimating || !battle.isPlayerTurn) return;
-    setIsAnimating(true);
+    if (isAnimating || !battle.isPlayerTurn) return
+    setIsAnimating(true)
 
-    const ownedProps = gameState.properties.filter(p => p.ownerId === 'player');
+    const ownedProps = gameState.properties.filter(p => p.ownerId === 'player')
     if (ownedProps.length === 0) {
-      updateStatus('所有している物件がありません！');
-      setIsAnimating(false);
-      return;
+      updateStatus('所有している物件がありません！')
+      setIsAnimating(false)
+      return
     }
 
-    const randomProp = ownedProps[Math.floor(Math.random() * ownedProps.length)];
-    const funds = calculatePropertyFunding(randomProp.id, gameState.properties);
-    setPlayerFunds(prev => prev + funds);
-    updateStatus(`${randomProp.name} から ${funds.toLocaleString()} G を調達！`);
-    setPhase('funding');
-    passTurnToOpponent();
+    const randomProp = ownedProps[Math.floor(Math.random() * ownedProps.length)]
+    const funds = calculatePropertyFunding(randomProp.id, gameState.properties)
+    setPlayerExternalFunds(prev => prev + funds)
+    onAdjustPropertyRisk(randomProp.id, 8)
+    updateStatus(`${randomProp.name} から ${funds.toLocaleString()} G を調達！`)
+    setPhase('funding')
+    passTurnToOpponent()
 
     setTimeout(() => {
-      setMessage('物件の独立危険度が少し上昇...');
-      setIsAnimating(false);
-    }, 1000);
-  };
+      updateStatus('物件の独立危険度が少し上昇...')
+      setIsAnimating(false)
+    }, 1000)
+  }
 
   const requestGroupFunds = () => {
-    if (isAnimating || !battle.isPlayerTurn) return;
-    setIsAnimating(true);
+    if (isAnimating || !battle.isPlayerTurn) return
+    setIsAnimating(true)
 
-    const unlockedGroups = gameState.groupTechniques.filter(g => g.isUnlocked);
+    const unlockedGroups = gameState.groupTechniques.filter(g => g.isUnlocked)
     if (unlockedGroups.length === 0) {
-      updateStatus('習得しているグループ技がありません！');
-      setIsAnimating(false);
-      return;
+      updateStatus('習得しているグループ技がありません！')
+      setIsAnimating(false)
+      return
     }
 
-    const randomGroup = unlockedGroups[Math.floor(Math.random() * unlockedGroups.length)];
+    const randomGroup = unlockedGroups[Math.floor(Math.random() * unlockedGroups.length)]
     const funds = calculateGroupFunding(
       randomGroup.id,
       gameState.groupTechniques,
       gameState.player.ownedProperties
-    );
+    )
 
-    setPlayerFunds(prev => prev + funds);
-    updateStatus(`${randomGroup.name} から ${funds.toLocaleString()} G を獲得！（グループ）`);
-    setPhase('funding');
-    passTurnToOpponent();
+    setPlayerExternalFunds(prev => prev + funds)
+    updateStatus(`${randomGroup.name} から ${funds.toLocaleString()} G を獲得！（グループ）`)
+    setPhase('funding')
+    passTurnToOpponent()
 
-    setTimeout(() => setIsAnimating(false), 1000);
-  };
+    setTimeout(() => setIsAnimating(false), 1000)
+  }
 
   const useNegotiation = () => {
-    if (isAnimating || !battle.isPlayerTurn) return;
-    setIsAnimating(true);
+    if (isAnimating || !battle.isPlayerTurn) return
+    setIsAnimating(true)
 
-    const unlockedTechs = gameState.negotiationTechniques.filter(t => t.isUnlocked);
+    const unlockedTechs = gameState.negotiationTechniques.filter(t => t.isUnlocked)
     if (unlockedTechs.length === 0) {
-      updateStatus('習得しているかけひき技がありません！');
-      setIsAnimating(false);
-      return;
+      updateStatus('習得しているかけひき技がありません！')
+      setIsAnimating(false)
+      return
     }
 
-    const smileTech = unlockedTechs.find(t => t.id === 'smile');
-    if (smileTech) {
-      setBattle(prev => ({
-        ...prev,
-        playerAcceleration: prev.playerAcceleration + 1,
-      }));
-      updateStatus('スマイルで会場が和み、加速度 +1');
-    } else {
-      updateStatus('かけひき技で揺さぶりを仕掛けた');
+    const technique = unlockedTechs[Math.floor(Math.random() * unlockedTechs.length)]
+    if (technique.cost > 0 && !onSpendCapital(technique.cost)) {
+      setIsAnimating(false)
+      return
     }
 
-    setPhase('negotiation');
-    passTurnToOpponent();
-    setTimeout(() => setIsAnimating(false), 1000);
-  };
+    switch (technique.effect) {
+      case 'accel_increase':
+        setBattle(prev => ({
+          ...prev,
+          playerAcceleration: prev.playerAcceleration + technique.effectValue,
+        }))
+        updateStatus(`${technique.name} で加速度 +${technique.effectValue}`)
+        break
+      case 'opponent_accel_decrease':
+        setBattle(prev => ({
+          ...prev,
+          opponentAcceleration: Math.max(1, prev.opponentAcceleration - technique.effectValue),
+        }))
+        updateStatus(`${technique.name} で相手の勢いを削いだ`)
+        break
+      case 'speed_increase':
+        setBattle(prev => ({ ...prev, gaugeSpeed: prev.gaugeSpeed + technique.effectValue }))
+        updateStatus(`${technique.name} が追い風を起こす！`)
+        break
+      case 'gauge_random': {
+        const swing = Math.floor((Math.random() - 0.5) * technique.effectValue * 1024)
+        setBattle(prev => ({
+          ...prev,
+          gaugeValue: Math.min(GAUGE_MAX, Math.max(0, prev.gaugeValue + swing)),
+        }))
+        updateStatus(`${technique.name} で情勢が大きく揺れ動いた！`)
+        break
+      }
+      case 'command_time_half':
+        setBattle(prev => ({
+          ...prev,
+          playerCommandWaitTime: Math.max(20, Math.floor(prev.playerCommandWaitTime / 2)),
+        }))
+        updateStatus('命令伝達が高速化！')
+        break
+      case 'opponent_time_double':
+        setBattle(prev => ({
+          ...prev,
+          opponentCommandWaitTime: prev.opponentCommandWaitTime * 2,
+        }))
+        updateStatus('敵社の連絡網を混乱させた！', 'player')
+        break
+      case 'reset_time':
+        setBattle(prev => ({
+          ...prev,
+          playerCommandWaitTime: 100,
+          opponentCommandWaitTime: 120,
+        }))
+        updateStatus('情報を整理し直して落ち着きを取り戻した')
+        break
+      case 'speed_increase_next_day':
+        updateStatus(`${technique.name} の準備を進めている…`)
+        setTimeout(() => {
+          setBattle(prev => ({ ...prev, gaugeSpeed: prev.gaugeSpeed + technique.effectValue }))
+          updateStatus('もてなしが功を奏し、勢いが増した！')
+        }, 900)
+        break
+      case 'random_persuade': {
+        if (Math.random() < 0.34) {
+          updateStatus('聴衆が味方し、一気に優勢に！')
+          setBattle(prev => ({
+            ...prev,
+            gaugeValue: Math.min(GAUGE_MAX, prev.gaugeValue + Math.floor(GAUGE_MAX * 0.35)),
+          }))
+        } else {
+          updateStatus(`${technique.name} は様子見となった…`)
+        }
+        break
+      }
+      case 'price_double':
+        setBattle(prev => ({
+          ...prev,
+          gaugeSpeed: prev.gaugeSpeed * 0.6,
+          playerAcceleration: Math.max(1, Math.floor(prev.playerAcceleration * 0.8)),
+          opponentAcceleration: Math.max(1, Math.floor(prev.opponentAcceleration * 0.8)),
+        }))
+        updateStatus('相場が跳ね上がり、情勢が一気に鈍化')
+        break
+      case 'price_half':
+        setBattle(prev => ({
+          ...prev,
+          gaugeSpeed: prev.gaugeSpeed + 15,
+          playerAcceleration: prev.playerAcceleration + 2,
+        }))
+        updateStatus('大幅値引きにより攻勢を強めた！')
+        break
+      case 'opponent_risk_increase':
+        onAdjustPropertyRisk(property.id, technique.effectValue)
+        updateStatus('敵社の足元を揺さぶり、独立危険度が上昇！')
+        break
+      case 'risk_half': {
+        const reduction = -Math.floor(property.independenceRisk / 2)
+        onAdjustPropertyRisk(property.id, reduction)
+        updateStatus('ネマワシが成功し、独立危険度が鎮静化')
+        break
+      }
+      default:
+        updateStatus(`${technique.name} を仕掛けた`)
+        break
+    }
+
+    setPhase('negotiation')
+    passTurnToOpponent()
+    setTimeout(() => setIsAnimating(false), 1000)
+  }
 
   const useOwnFunds = () => {
-    if (isAnimating || !battle.isPlayerTurn) return;
-    setIsAnimating(true);
+    if (isAnimating || !battle.isPlayerTurn) return
+    setIsAnimating(true)
 
-    const amount = Math.min(gameState.player.capital, property.basePrice * 0.1);
+    const amount = Math.min(gameState.player.capital, Math.max(1000, property.basePrice * 0.05))
     if (amount < 1000) {
-      updateStatus('投入できる資金が不足しています！');
-      setIsAnimating(false);
-      return;
+      updateStatus('投入できる資金が不足しています！')
+      setIsAnimating(false)
+      return
     }
 
-    setPlayerFunds(prev => prev + amount);
-    updateStatus(`自社資金 ${amount.toLocaleString()} G を追加投入！`);
-    setPhase('funding');
-    passTurnToOpponent();
+    if (!onSpendCapital(amount)) {
+      setIsAnimating(false)
+      return
+    }
 
-    setTimeout(() => setIsAnimating(false), 1000);
-  };
+    setPlayerCapitalContribution(prev => prev + amount)
+    updateStatus(`自社資金 ${amount.toLocaleString()} G を追加投入！`)
+    setPhase('funding')
+    passTurnToOpponent()
+
+    setTimeout(() => setIsAnimating(false), 1000)
+  }
 
   const giveUp = () => {
-    if (confirm('トレードを終了しますか？')) {
-      setPhase('decision');
-      updateStatus('トレードから撤退しました');
-      onCancel();
-    }
-  };
+    setPhase('decision')
+    updateStatus('トレードから撤退しました')
+    onCancel()
+  }
 
   useEffect(() => {
     if (!battle.isPlayerTurn && !isAnimating) {
       const timer = setTimeout(() => {
-        const opponentMove = Math.random();
-        let funds = 0;
-        let moveMessage = '';
+        const opponentMove = Math.random()
+        let funds = 0
+        let moveMessage = ''
 
-        if (opponentMove < 0.5) {
-          funds = Math.floor(property.basePrice * 0.05 * (1 + Math.random()));
-          moveMessage = `相手が資金を投入！ ${funds.toLocaleString()} G`;
-          setOpponentFunds(prev => prev + funds);
+        if (opponentMove < 0.4 || playerFunds > opponentFunds + property.basePrice * 0.1) {
+          funds = Math.floor(property.basePrice * 0.05 * (1 + Math.random()))
+          moveMessage = `相手が資金を投入！ ${funds.toLocaleString()} G`
+          setOpponentFunds(prev => prev + funds)
+        } else if (opponentMove < 0.7) {
+          setBattle(prev => ({
+            ...prev,
+            opponentAcceleration: prev.opponentAcceleration + 2,
+          }))
+          moveMessage = '相手が巧みな戦術で加速度を上げた'
         } else {
           setBattle(prev => ({
             ...prev,
-            opponentAcceleration: prev.opponentAcceleration + 1,
-          }));
-          moveMessage = '相手が戦術を使用し、加速度が上昇';
+            gaugeSpeed: prev.gaugeSpeed - 5,
+          }))
+          moveMessage = '相手が情報戦を仕掛けてきた'
         }
 
-        updateStatus(moveMessage, 'opponent');
-        setPhase('negotiation');
-        setBattle(prev => ({ ...prev, isPlayerTurn: true }));
-      }, 900);
+        updateStatus(moveMessage, 'opponent')
+        setPhase('negotiation')
+        setBattle(prev => ({ ...prev, isPlayerTurn: true }))
+      }, 900)
 
-      return () => clearTimeout(timer);
+      return () => clearTimeout(timer)
     }
-  }, [battle.isPlayerTurn, isAnimating, property.basePrice, updateStatus]);
+  }, [battle.isPlayerTurn, isAnimating, property.basePrice, playerFunds, opponentFunds, updateStatus])
 
   const locationLabel = city?.name ?? '未知の都市';
 
